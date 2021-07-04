@@ -109,25 +109,23 @@ let UserResolver = class UserResolver {
             return { user: user };
         });
     }
-    login(options, { em }) {
+    login(options, { em, req }) {
         return __awaiter(this, void 0, void 0, function* () {
             const user = yield em.findOne(User_1.User, { username: options.username });
             if (!user) {
                 return {
                     errors: [{ field: "username", message: "Username doesn't exist!" }],
-                    user: undefined,
                 };
             }
             const valid = yield argon2_1.default.verify(user.password, options.password);
             if (!valid) {
                 return {
                     errors: [{ field: "password", message: "Incorrect password" }],
-                    user: undefined,
                 };
             }
+            req.session.userId = user.id;
             return {
-                errors: undefined,
-                user: user,
+                user,
             };
         });
     }
