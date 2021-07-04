@@ -80,12 +80,32 @@ let UserResolver = class UserResolver {
                     ],
                 };
             }
+            if (options.password.length <= 2) {
+                return {
+                    errors: [
+                        {
+                            field: "username",
+                            message: "Password must be greater than 2 characters",
+                        },
+                    ],
+                };
+            }
             const hashedPassword = yield argon2_1.default.hash(options.password);
             const user = em.create(User_1.User, {
                 username: options.username,
                 password: hashedPassword,
             });
-            yield em.persistAndFlush(user);
+            try {
+                yield em.persistAndFlush(user);
+            }
+            catch (err) {
+                if (err.code === "23505" || err.detail.includes("already exists")) {
+                    console.log(`Username already exists!`);
+                    return {
+                        errors: [{ field: "username", message: "Username already taken" }],
+                    };
+                }
+            }
             return { user: user };
         });
     }

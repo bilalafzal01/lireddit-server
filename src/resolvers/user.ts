@@ -57,12 +57,32 @@ export class UserResolver {
         ],
       };
     }
+    if (options.password.length <= 2) {
+      return {
+        errors: [
+          {
+            field: "username",
+            message: "Password must be greater than 2 characters",
+          },
+        ],
+      };
+    }
+
     const hashedPassword = await argon2.hash(options.password);
     const user = em.create(User, {
       username: options.username,
       password: hashedPassword,
     });
-    await em.persistAndFlush(user);
+    try {
+      await em.persistAndFlush(user);
+    } catch (err) {
+      if (err.code === "23505" || err.detail.includes("already exists")) {
+        console.log(`Username already exists!`);
+        return {
+          errors: [{ field: "username", message: "Username already taken" }],
+        };
+      }
+    }
     return { user: user };
   }
 
