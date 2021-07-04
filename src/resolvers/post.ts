@@ -1,0 +1,50 @@
+import { Post } from "../entities/Post";
+import { Arg, Ctx, Int, Mutation, Query, Resolver } from "type-graphql";
+import { MyContext } from "../types";
+
+@Resolver()
+export class PostResolver {
+  //   * find all
+  @Query(() => [Post])
+  posts(@Ctx() { em }: MyContext): Promise<Post[]> {
+    return em.find(Post, {});
+  }
+
+  //   * find one
+  @Query(() => Post, { nullable: true })
+  post(
+    @Arg("id", () => Int) id: number,
+    @Ctx() { em }: MyContext
+  ): Promise<Post | null> {
+    return em.findOne(Post, { id });
+  }
+
+  //   * create one
+  @Mutation(() => Post)
+  async createPost(
+    @Arg("title", () => String) title: String,
+    @Ctx() { em }: MyContext
+  ): Promise<Post> {
+    const post = em.create(Post, { title });
+    await em.persistAndFlush(post);
+    return post;
+  }
+
+  //   * update one
+  @Mutation(() => Post, { nullable: true })
+  async updatePost(
+    @Arg("title", () => String, { nullable: true }) title: String,
+    @Arg("id", () => Int) id: number,
+    @Ctx() { em }: MyContext
+  ): Promise<Post | null> {
+    const post = await em.findOne(Post, { id });
+    if (!post) {
+      return null;
+    }
+    if (typeof title !== "undefined") {
+      post.title = title;
+      await em.persistAndFlush(post);
+    }
+    return post;
+  }
+}
