@@ -18,8 +18,8 @@ export class User {
 
   @Field(() => String)
   @Property({ type: "text", unique: true })
-  username!: String;
+  username!: string;
 
   @Property({ type: "text" })
-  password!: String;
+  password!: string;
 }
