@@ -12,11 +12,11 @@ import { UserResolver } from "./resolvers/user";
 import { __prod__ } from "./constants";
 import { MyContext } from "./types";
 
-declare module "express-session" {
-  export interface SessionData {
-    userId: number;
-  }
-}
+// declare module "express-session" {
+//   export interface SessionData {
+//     userId: number;
+//   }
+// }
 
 const main = async () => {
   const orm = await MikroORM.init(mikroOrmConfig);
@@ -36,7 +36,7 @@ const main = async () => {
       }),
       cookie: {
         maxAge: 1000 * 60 * 60 * 24 * 365 * 10, // * 10 years
-        httpOnly: false, // * cannot access the cookie from browswer,
+        httpOnly: true, // * cannot access the cookie from browswer,
         secure: __prod__, // * cookie only works in https
         sameSite: "lax",
       },
